@@ -1,4 +1,5 @@
 <?php 
+define("BURL","http://mymvc.local/");
 
 /**
  * database configuration 
