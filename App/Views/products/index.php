@@ -1,5 +1,5 @@
 <?php  include(VIEWS.'inc'.DS.'header.php');
-echo$_SESSION['message']
+
 // isset():
 ?>
 
@@ -8,12 +8,18 @@ echo$_SESSION['message']
 <div class="container">
     <div class="row">
         <div class="col-10 mx-auto p-4 border mb-5">
-            <?php if( isset($_SESSION['message'])): ?>
+            <?php if( isset($_SESSION['message']) && !empty($_SESSION['message']) ): ?>
             <h3 class="alert alert-success text-center"><?php echo $_SESSION['message'] ?></h3>
+            <?php
+                  unset($_SESSION['message']);
+                ?>
+            <script>
+            setTimeout(function() {
+                document.querySelector('.alert').style.display = 'none';
+            }, 3000);
+            </script>
             <?php endif; ?>
-            <?php if(isset($error)): ?>
-            <h3 class="alert alert-danger text-center"><?php  echo $error; ?></h3>
-            <?php endif; ?>
+
             <table class="table">
                 <thead class="thead-dark">
                     <tr>

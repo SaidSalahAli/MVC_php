@@ -1,5 +1,6 @@
 <?php 
 
+
 session_start();
 
 class ProductController {
@@ -62,49 +63,48 @@ public function store(){
   
 }
 public function edit($id) {
-    $filId = filter_var($id,FILTER_SANITIZE_NUMBER_INT);
-   
+    // Convert the $id parameter to an integer
+    $productId = (int)$id;
+
     $db = new Product;
-    $data['product_edit']= $db->getRow($filId);
-//   var_dump($db->getRow($id));
-    // echo $db->getRow($id);
-    View::load('products/edit',$data);
+    $product = $db->getRow($productId);
+
+    if (empty($product)) {
+        // Handle the case where the product is not found
+        echo "Product not found.";
+        return;
+    }
+
+    // If the product exists, load the edit view with the product data
+    $data['product_edit'] = $product;
+    View::load('products/edit', $data);
 }
 
-public function update($id){
-    if(isset($_POST['submit'])){
-        $filId = filter_var($id,FILTER_SANITIZE_NUMBER_INT);
+
+
+public function update($id) {
+    if(isset($_POST['submit'])) {
+        $filId = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
         $name = $_POST['name'];
         $price = $_POST['price'];
         $description = $_POST['description'];
         $qty = $_POST['qty'];
 
-
         $dataUpdate = array(
-       
             "name" => $name,
             "price" => $price,
             "description" => $description,
             "qty" => $qty
-            
         );
 
-
-        $db= new Product;
-        if ($db->updateProduct($dataUpdate,$filId)){
-            // $data['products']= $db->getRow($id);
-            // $data['products']= $db->getAllProduct();
+        $db = new Product;
+        if ($db->updateProduct($dataUpdate, $filId)) {
             header("Location: /product");
-         $_SESSION['message']="Data edit Successfully";
- 
-
-        }else{
-            View::load('products/add',["dngaer"=>"Data are not inserted"]);
-            echo "dngaer";
-
+            $_SESSION['message'] = "Data edited successfully";
+        } else {
+            echo "danger";
+            // View::load('products/add',["dngaer"=>"Data are not inserted"]);
         }
-
     }
-  
 }
 }

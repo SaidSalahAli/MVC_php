@@ -13,6 +13,8 @@ class Database {
     }   
     
     public function getSingleProduct(string $tableName, int $productId, $columns = '*') {
+        $this->connection->begin_transaction();
+
         try {
             // Validate tablename
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -24,10 +26,6 @@ class Database {
         
         // Prepare the statement
         $statement = $this->connection->prepare($query);
-        
-        if (!$statement) {
-            throw new Exception("Execution failed: " . $this->connection->error);
-        }
         // handle connection errors
         
         // Bind the product ID parameter to the prepared statement
@@ -50,15 +48,17 @@ class Database {
         
         return $data;
     } catch (Exception $e) {
-   
+        $this->connection->rollback(); 
         echo "Error: " . $e->getMessage();
    
     }
-}
+    }
     
     
+    public function get(string $tableName, $numRows = null, $columns = '*') {        
+        // Begin Transaction
+        $this->connection->begin_transaction();
     
-    public function get(string $tableName, $numRows = null, $columns = '*') {
         try {
             // Validate tablename
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -86,7 +86,7 @@ class Database {
             
            // Execute the statement
            $success = $statement->execute();
-        //    print_r($statement);
+           print_r($statement);
            // Check for execution errors
            if (!$success) {
                throw new Exception("Execution failed: " . $statement->error);
@@ -103,16 +103,21 @@ class Database {
             // Close the statement
             $statement->close();
             
+            $this->connection->commit(); 
             return $data;
-        } catch (Exception $e) {   
-            echo "Error: " . $e->getMessage();       
+        } catch (Exception $e) {
+            $this->connection->rollback(); 
+            echo "Error: " . $e->getMessage();
         }
     }
+    
     
         
     
     
     public function insert(string $tableName, array $data) {
+              // Begin Transaction
+              $this->connection->begin_transaction();
         try {
             // Validate tablename
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -142,17 +147,19 @@ class Database {
             throw new Exception("Execution failed: " . $statement->error);
         }
         // Close the statement
-        $statement->close();        
-        return $result;
+        $statement->close();     
+        $this->connection->commit();    
+         return $result;
          } catch (Exception $e) {
-   
-        echo "Error: " . $e->getMessage();
-   
-    }
+            $this->connection->rollback(); 
+           echo "Error: " . $e->getMessage();   
+        }
     
     }
 
     public function update(string $tableName, array $data,  $condition) {
+              // Begin Transactions
+                                      $this->connection->begin_transaction();
         try {
             // Validate tablename
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -173,16 +180,18 @@ class Database {
         $types = str_repeat('s', count($data)); // Assuming all values are strings
         $values = array_values($data);
         $statement->bind_param($types, ...$values);
-        // print_r($statement);
+        print_r($statement);
         // Execute the statement
         $result = $statement->execute();
-        
+        if (!$result) {
+            throw new Exception("Execution failed: " . $statement->error);
+        }
         // Close the statement
         $statement->close();
-        
+        $this->connection->commit();   
         return $result;
     } catch (Exception $e) {
-   
+        $this->connection->rollback(); 
         echo "Error: " . $e->getMessage();
    
     }
@@ -190,6 +199,8 @@ class Database {
     
    
     public function delete(string $tableName, string $condition) {
+              // Begin Transaction
+              $this->connection->begin_transaction();
         try {
             // Validate tablename
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -199,26 +210,25 @@ class Database {
         $query = "DELETE FROM $tableName WHERE $condition";
         
         // Prepare the statement
-          $statement = $this->connection->prepare($query);
+        $statement = $this->connection->prepare($query);
         if (!$statement) {
             throw new Exception("Execution failed: " . $this->connection->error);
         }
-        
-
-        
         // Prepare the statement
         $statement = $this->connection->prepare($query);
         
         // Execute the statement
         $result = $statement->execute();
-
-        
+        if (!$result) {
+            throw new Exception("Execution failed: " . $statement->error);
+        }        
         // Close the statement
         $statement->close();
-        
+        $this->connection->commit();   
         return $result;
+        
     } catch (Exception $e) {
-   
+        $this->connection->rollback(); 
         echo "Error: " . $e->getMessage();
    
     }

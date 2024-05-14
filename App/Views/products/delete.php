@@ -6,11 +6,7 @@
     <div class="row">
         <div class="col-8 mx-auto">
 
-
-
             <h3 class="alert alert-success text-center">deleted is done</h3>
-
-
 
         </div>
     </div>
